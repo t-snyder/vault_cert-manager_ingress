@@ -10,6 +10,7 @@ minikube start --cpus 4 --memory 12288 --vm-driver kvm2 --disk-size 100g --insec
 # Addons
 minikube addons enable dashboard
 minikube addons enable metrics-server
+minikube addons enable ingress-nginx
 
 # Start dashboard
 minikube dashboard

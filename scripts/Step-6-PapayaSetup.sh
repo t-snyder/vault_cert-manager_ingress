@@ -1,4 +1,5 @@
-
+# **************** Note - Below is a prerequisite
+minikube addons enable ingress-nginx 
 
 #print out the Admin token
 echo $ADMIN_TOKEN
@@ -95,4 +96,12 @@ exit
 kubectl apply -f $WORKDIR/kube/papaya-pvc.yaml -n papaya
 
 kubectl apply -f $WORKDIR/kube/papaya.yaml -n papaya
+
+# Test
+ipAddr=$(minikube ip)
+echo "Minikube ip = $ipAddr"
+sudo -- sh -c 'echo "\n'"$ipAddr"' papaya.foo.com\n" >> /etc/hosts'
+
+#curl -kL https://papaya.foo.com/papaya
+# Successful response = Pekko-http says that Papaya is a sweet fruit
 
