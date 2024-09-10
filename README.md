@@ -1,14 +1,17 @@
 The script files within the /script directory go through a series of deployment steps.
 
-Step-1-startMinikube.sh
-Step-2-deployVaultTLS.sh
-Step-3-deployVaultSetup.sh
-Step-4-configVaultCA.sh
-Step-5-vaultIssuerSetup.sh
-Step-6-PapayaSetup.sh
+| Step # | File Commands  |
+|-----:|---------------|
+|     1| Step-1-startMinikube.sh              |
+|     2| Step-2-deployVaultTLS.sh              |
+|     3| Step-3-deployVaultSetup.sh              |
+|     4| Step-4-configVaultCA.sh            |
+|     5| Step-5-vaultIssuerSetup.sh |
+|     6| Step-6-PapayaSetup.sh       |
 
 The particular versions that these prototypes were generated and tested with are:
 Ubuntu - 20.04
+
 Minikube Bundle
   Minikube - 1.33
   Kubernetes - 1.30
@@ -28,12 +31,14 @@ Step 1 - Start Minikube.sh
 Within these steps minikube and addons are installed. After the initial deployment
 the apiserver.yaml is changed to encrypt the etcdv3 storage. Existing secrets are 
 then converted from plaintext to being encrypted, and the storage is finally tested.
+**************************************************************************************
 
 Step 2 - Create and Deploy crypto assets in preparation for using the Vault with TLS.
 Main documentation - https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-minikube-tls
 This step creates and configures keys and certificates for use within vault for TLS. The
 certificate is signed by kubernetes. After generation vault is deployed using the Vault 
 Helm chart.
+**************************************************************************************
 
 Step 3 - Deploy Vault Setup (Configure, join and unseal)
 Main documentation - https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-minikube-tls
@@ -41,6 +46,7 @@ This step first generates the unseal keys for the vault pods. Vault-0 is first u
 and then vault-1 and vault-2 are joined to vault-0. After being joined vault-1 and vault-2
 are unsealed. The generated cluster key is then used to login to vault. After this several
 tests are done to ensure the vault is in working order.
+**************************************************************************************
 
 *************** Note ******************
 At this point vault and etcd are working. However if minikube goes down due to logging
@@ -56,6 +62,7 @@ The steps to configure the Vault as a CA involve setting up the Root CA and then
 intermediate CA. I could successfully get the Vault UI steps to generate the artifacts
 and subsequently generate certificates. The cli steps work, but in the end when trying 
 to generate certificates there is an error. 
+**************************************************************************************
 
 Step 5 - Vault Issuer Setup
 Main document 1 - https://developer.hashicorp.com/vault/tutorials/archive/kubernetes-cert-manager
@@ -63,6 +70,7 @@ Main document 2 - https://cert-manager.io/docs/configuration/vault/
 These steps set up the roles, role bindings, service accounts and authentication to
 allow vault to act as a certificate issuer for cert-manager. These steps are performed
 from the point of view of Vault.
+**************************************************************************************
 
 Step 6 - Papaya Setup
 Main document 1 - https://developer.hashicorp.com/vault/tutorials/archive/kubernetes-cert-manager
