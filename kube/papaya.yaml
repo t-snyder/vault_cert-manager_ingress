@@ -1,0 +1,121 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: vault-papaya-issuer
+  namespace: papaya
+spec:
+  vault:
+    path: pki_int_foo/sign/foo-dot-com
+    server: https://vault.local
+    auth:
+      kubernetes:
+        role: vault-issuer-role
+        mountPath: /v1/auth/kubernetes
+        serviceAccountRef:
+          name: vault-papaya-issuer
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: papaya-tls-cert
+spec:
+  isCA: false
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  dnsNames:
+    - localhost
+    - papaya
+    - papaya.server.svc.cluster.local
+    - papaya.foo.com
+  ipAddresses:
+    - 127.0.0.1
+    - 0.0.0.0
+  secretName: papaya-tls-cert
+  issuerRef:
+    name: vault-papaya-issuer
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: papaya
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: papaya
+  template:
+    metadata:
+      labels:
+        app: papaya
+    spec:
+      containers:
+        - name: main
+          image: library/papaya:1.0
+          imagePullPolicy: IfNotPresent
+          workingDir: /var/app/
+#          tty: true
+#          stdin: true
+          env:
+            - name: SERVER_HOME
+              value: "/var/app"
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: papaya-volume
+              mountPath: /var/app/data
+      volumes:
+        - name: papaya-volume
+          persistentVolumeClaim:
+            claimName: papaya-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: papaya-svc
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 8080  
+#    - name: https
+#      port: 443
+#      protocol: TCP
+#      targetPort: 9443  
+  selector:
+    app: papaya
+    
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: 60s
+#    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+#    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+  labels:
+    app: papaya
+  name: papaya
+spec:
+  tls:
+    - hosts:
+        - papaya.foo.com
+      secretName: papaya-tls-cert
+  ingressClassName: nginx
+  rules:
+    - host: papaya.foo.com
+      http:
+        paths:
+          - path: /papaya
+            pathType: Prefix
+            backend:
+              service:
+                name: papaya-svc
+                port:
+                  name: http
+  
