@@ -1,0 +1,11 @@
+FROM openjdk:17-jdk-alpine
+
+RUN mkdir -p /var/app
+RUN mkdir -p /var/app/lib
+
+COPY ./lib/          /var/app/lib
+COPY ./PapayaServer.jar /var/app/PapayaServer.jar
+
+WORKDIR /var/app
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","/var/app/PapayaServer.jar"]
